@@ -1,48 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Candle Additive Calculator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candle Calculator</title>
+
 <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    input { padding: 6px; margin: 4px 0; width: 100%; }
-    button { padding: 8px 12px; margin-top: 10px; width: 100%; }
-    .additive-row { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 6px; }
+    body { 
+        font-family: -apple-system, Arial; 
+        margin: 20px; 
+        background: #f7f7f7;
+    }
+    h2 { margin-bottom: 10px; }
+    .card {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    label { font-size: 14px; font-weight: 600; }
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+    #addBtn { background: #000; color: white; }
+    #calcBtn { background: #4d79ff; color: white; }
+    .removeBtn {
+        background: #ff4d4d;
+        color: white;
+        padding: 8px;
+        border-radius: 8px;
+        width: 100%;
+        border: none;
+        margin-top: 5px;
+    }
+    pre {
+        font-size: 15px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
 </style>
 </head>
+
 <body>
 
 <h2>Candle Additive Calculator</h2>
 
-<label>Total Candle Weight (oz):</label>
-<input type="number" id="totalWeight" step="0.01" />
+<div class="card">
+    <label>Total Candle Weight (oz)</label>
+    <input type="number" id="totalWeight" step="0.01" placeholder="e.g., 8.0">
+</div>
 
 <h3>Additives</h3>
+
 <div id="additives"></div>
 
-<button onclick="addAdditive()">+ Add Additive</button>
-
-<button onclick="calculate()">Calculate</button>
+<button id="addBtn" onclick="addAdditive()">+ Add Additive</button>
+<button id="calcBtn" onclick="calculate()">Calculate</button>
 
 <h3>Results</h3>
-<pre id="results"></pre>
+<pre id="results">Enter your candle weight and additives.</pre>
+
 
 <script>
-function addAdditive() {
+// Create the fragrance oil slot on load
+window.onload = function() {
+    addAdditive("Fragrance Oil", "");
+};
+
+function addAdditive(defaultName = "", defaultPercent = "") {
     const container = document.getElementById("additives");
 
     const div = document.createElement("div");
-    div.className = "additive-row";
+    div.className = "card additive-row";
 
     div.innerHTML = `
-        <label>Additive Name:</label>
-        <input type="text" class="additive-name" placeholder="e.g., Stearic Acid" />
+        <label>Additive Name</label>
+        <input type="text" class="additive-name" value="${defaultName}" placeholder="e.g., Stearic Acid">
 
-        <label>Percentage (%):</label>
-        <input type="number" class="additive-percent" step="0.01" placeholder="e.g., 3.5" />
+        <label>Percentage (%)</label>
+        <input type="number" class="additive-percent" value="${defaultPercent}" step="0.01" placeholder="e.g., 3.5">
 
-        <button onclick="this.parentElement.remove()">Remove</button>
+        ${defaultName === "Fragrance Oil" ? "" : `<button class="removeBtn" onclick="this.parentElement.remove()">Remove</button>`}
     `;
 
     container.appendChild(div);
