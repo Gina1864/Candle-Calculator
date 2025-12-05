@@ -1,97 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Custom Candle Calculator</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Candle Additive Calculator</title>
 <style>
-  body { font-family: Arial; padding: 20px; background: #fff; color: #000; }
-  h2 { text-align: center; }
-  input, button { width: 100%; padding: 12px; font-size: 18px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; }
-  button { background: black; color: white; border: none; }
-  .result { margin-top: 20px; font-size: 20px; }
-  .additive { display: flex; gap: 10px; margin-top: 5px; }
-  .additive input { flex: 1; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input { padding: 6px; margin: 4px 0; width: 100%; }
+    button { padding: 8px 12px; margin-top: 10px; width: 100%; }
+    .additive-row { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 6px; }
 </style>
 </head>
 <body>
 
-<h2>Custom Method B Candle Calculator</h2>
+<h2>Candle Additive Calculator</h2>
 
-<label>Final Candle Weight (oz):</label>
-<input id="total" type="number" step="0.01" placeholder="Enter finished candle weight">
+<label>Total Candle Weight (oz):</label>
+<input type="number" id="totalWeight" step="0.01" />
 
-<label>Fragrance Load (%):</label>
-<input id="fragrance" type="number" step="0.1" placeholder="Enter fragrance % (optional)">
+<h3>Additives</h3>
+<div id="additives"></div>
 
-<h3>Other Additives</h3>
-<div id="additives-container">
-  <div class="additive">
-    <input type="text" placeholder="Additive Name" class="additive-name">
-    <input type="number" step="0.01" placeholder="%" class="additive-pct">
-  </div>
-</div>
+<button onclick="addAdditive()">+ Add Additive</button>
 
-<button onclick="addAdditive()">+ Add Another Additive</button>
-<button onclick="calc()">Calculate</button>
+<button onclick="calculate()">Calculate</button>
 
-<div class="result" id="output"></div>
+<h3>Results</h3>
+<pre id="results"></pre>
 
 <script>
-const defaultAdditives = [
-  
-];
-
 function addAdditive() {
-  const container = document.getElementById('additives-container');
-  const div = document.createElement('div');
-  div.className = 'additive';
-  div.innerHTML = '<input type="text" placeholder="Additive Name" class="additive-name">' +
-                  '<input type="number" step="0.01" placeholder="%" class="additive-pct">';
-  container.appendChild(div);
+    const container = document.getElementById("additives");
+
+    const div = document.createElement("div");
+    div.className = "additive-row";
+
+    div.innerHTML = `
+        <label>Additive Name:</label>
+        <input type="text" class="additive-name" placeholder="e.g., Stearic Acid" />
+
+        <label>Percentage (%):</label>
+        <input type="number" class="additive-percent" step="0.01" placeholder="e.g., 3.5" />
+
+        <button onclick="this.parentElement.remove()">Remove</button>
+    `;
+
+    container.appendChild(div);
 }
 
-function calc() {
-  let total = parseFloat(document.getElementById('total').value);
-  if (isNaN(total) || total <= 0) {
-    document.getElementById('output').innerHTML = "Enter a valid weight.";
-    return;
-  }
-
-  let fragrancePct = parseFloat(document.getElementById('fragrance').value) || 0;
-
-  // Gather all additives
-  let additives = defaultAdditives.map(a => ({name: a.name, pct: a.pct}));
-  const customNames = document.getElementsByClassName('additive-name');
-  const customPcts = document.getElementsByClassName('additive-pct');
-
-  for (let i = 0; i < customNames.length; i++) {
-    let name = customNames[i].value.trim();
-    let pct = parseFloat(customPcts[i].value);
-    if (name && !isNaN(pct) && pct > 0) {
-      additives.push({name, pct});
+function calculate() {
+    const totalWeight = parseFloat(document.getElementById("totalWeight").value);
+    if (!totalWeight) {
+        document.getElementById("results").textContent = "Enter a total candle weight.";
+        return;
     }
-  }
 
-  // Include fragrance as an additive
-  if (fragrancePct > 0) {
-    additives.push({name: 'Fragrance', pct: fragrancePct});
-  }
+    const names = Array.from(document.getElementsByClassName("additive-name"));
+    const percents = Array.from(document.getElementsByClassName("additive-percent"));
 
-  // Calculate total additive %
-  let totalAddPct = additives.reduce((sum, a) => sum + a.pct / 100, 0);
+    let additives = [];
+    let percentTotal = 0;
 
-  // Method B: back-calculate wax
-  let wax = total / (1 + totalAddPct);
+    for (let i = 0; i < names.length; i++) {
+        const name = names[i].value.trim();
+        const percent = parseFloat(percents[i].value);
 
-  // Build result string
-  let result = `<b>Wax:</b> ${wax.toFixed(2)} oz<br>`;
-  additives.forEach(a => {
-    let amt = wax * (a.pct / 100);
-    result += `<b>${a.name} (${a.pct}%):</b> ${amt.toFixed(2)} oz<br>`;
-  });
-  result += `<b>Total Finished Weight:</b> ${total.toFixed(2)} oz`;
+        if (!name || !percent) continue;
 
-  document.getElementById('output').innerHTML = result;
+        percentTotal += percent;
+
+        additives.push({
+            name,
+            percent,
+            weight: (percent / 100) * totalWeight
+        });
+    }
+
+    const waxPercent = 100 - percentTotal;
+    const waxWeight = (waxPercent / 100) * totalWeight;
+
+    let output = "";
+    additives.forEach(a => {
+        output += `${a.name}: ${a.weight.toFixed(4)} oz (${a.percent}%)\n`;
+    });
+
+    output += `\nWax: ${waxWeight.toFixed(4)} oz (${waxPercent.toFixed(2)}%)`;
+
+    document.getElementById("results").textContent = output;
 }
 </script>
 
