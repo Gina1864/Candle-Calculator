@@ -1,149 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Candle Calculator</title>
-
+<title>Custom Candle Calculator</title>
 <style>
-    body { 
-        font-family: -apple-system, Arial; 
-        margin: 20px; 
-        background: #f7f7f7;
-    }
-    h2 { margin-bottom: 10px; }
-    .card {
-        background: white;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        margin-bottom: 15px;
-    }
-    label { font-size: 14px; font-weight: 600; }
-    input {
-        width: 100%;
-        padding: 10px;
-        margin-top: 6px;
-        margin-bottom: 12px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-size: 15px;
-    }
-    button {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        font-size: 16px;
-        margin-top: 10px;
-        cursor: pointer;
-    }
-    #addBtn { background: #000; color: white; }
-    #calcBtn { background: #4d79ff; color: white; }
-    .removeBtn {
-        background: #ff4d4d;
-        color: white;
-        padding: 8px;
-        border-radius: 8px;
-        width: 100%;
-        border: none;
-        margin-top: 5px;
-    }
-    pre {
-        font-size: 15px;
-        background: #fff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    }
+  body { font-family: Arial; padding: 20px; background: #fff; color: #000; }
+  h2 { text-align: center; }
+  input, button { width: 100%; padding: 12px; font-size: 18px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; }
+  button { background: black; color: white; border: none; }
+  .result { margin-top: 20px; font-size: 20px; }
+  .additive { display: flex; gap: 10px; margin-top: 5px; }
+  .additive input { flex: 1; }
 </style>
 </head>
-
 <body>
 
-<h2>Candle Additive Calculator</h2>
+<h2>Custom Method B Candle Calculator</h2>
 
-<div class="card">
-    <label>Total Candle Weight (oz)</label>
-    <input type="number" id="totalWeight" step="0.01" placeholder="e.g., 8.0">
+<label>Final Candle Weight (oz):</label>
+<input id="total" type="number" step="0.01" placeholder="Enter finished candle weight">
+
+<label>Fragrance Load (%):</label>
+<input id="fragrance" type="number" step="0.1" placeholder="Enter fragrance %">
+
+<h3>Other Additives</h3>
+<div id="additives-container">
+  <div class="additive">
+    <input type="text" placeholder="Additive Name" class="additive-name">
+    <input type="number" step="0.01" placeholder="%" class="additive-pct">
+  </div>
 </div>
 
-<h3>Additives</h3>
+<button onclick="addAdditive()">+ Add Another Additive</button>
+<button onclick="calc()">Calculate</button>
 
-<div id="additives"></div>
-
-<button id="addBtn" onclick="addAdditive()">+ Add Additive</button>
-<button id="calcBtn" onclick="calculate()">Calculate</button>
-
-<h3>Results</h3>
-<pre id="results">Enter your candle weight and additives.</pre>
-
+<div class="result" id="output"></div>
 
 <script>
-// Create the fragrance oil slot on load
-window.onload = function() {
-    addAdditive("Fragrance Oil", "");
-};
 
-function addAdditive(defaultName = "", defaultPercent = "") {
-    const container = document.getElementById("additives");
+// No default additives anymore 🚫
+// Only fragrance + user-added additives
 
-    const div = document.createElement("div");
-    div.className = "card additive-row";
-
-    div.innerHTML = `
-        <label>Additive Name</label>
-        <input type="text" class="additive-name" value="${defaultName}" placeholder="e.g., Stearic Acid">
-
-        <label>Percentage (%)</label>
-        <input type="number" class="additive-percent" value="${defaultPercent}" step="0.01" placeholder="e.g., 3.5">
-
-        ${defaultName === "Fragrance Oil" ? "" : `<button class="removeBtn" onclick="this.parentElement.remove()">Remove</button>`}
-    `;
-
-    container.appendChild(div);
+function addAdditive() {
+  const container = document.getElementById('additives-container');
+  const div = document.createElement('div');
+  div.className = 'additive';
+  div.innerHTML =
+    '<input type="text" placeholder="Additive Name" class="additive-name">' +
+    '<input type="number" step="0.01" placeholder="%" class="additive-pct">';
+  
+  container.appendChild(div);
 }
 
-function calculate() {
-    const totalWeight = parseFloat(document.getElementById("totalWeight").value);
-    if (!totalWeight) {
-        document.getElementById("results").textContent = "Enter a total candle weight.";
-        return;
+function calc() {
+  let total = parseFloat(document.getElementById('total').value);
+  if (isNaN(total) || total <= 0) {
+    document.getElementById('output').innerHTML = "Enter a valid weight.";
+    return;
+  }
+
+  let fragrancePct = parseFloat(document.getElementById('fragrance').value) || 0;
+
+  let additives = [];
+
+  // Include fragrance if entered
+  if (fragrancePct > 0) {
+    additives.push({name: 'Fragrance', pct: fragrancePct});
+  }
+
+  // Gather custom additives
+  const customNames = document.getElementsByClassName('additive-name');
+  const customPcts = document.getElementsByClassName('additive-pct');
+
+  for (let i = 0; i < customNames.length; i++) {
+    let name = customNames[i].value.trim();
+    let pct = parseFloat(customPcts[i].value);
+    if (name && !isNaN(pct) && pct > 0) {
+      additives.push({name, pct});
     }
+  }
 
-    const names = Array.from(document.getElementsByClassName("additive-name"));
-    const percents = Array.from(document.getElementsByClassName("additive-percent"));
+  // Total additive % (converted to decimal)
+  let totalAddPct = additives.reduce((sum, a) => sum + a.pct/100, 0);
 
-    let additives = [];
-    let percentTotal = 0;
+  // Method B: Find wax weight
+  let wax = total / (1 + totalAddPct);
 
-    for (let i = 0; i < names.length; i++) {
-        const name = names[i].value.trim();
-        const percent = parseFloat(percents[i].value);
+  let result = `<b>Wax:</b> ${wax.toFixed(2)} oz<br>`;
 
-        if (!name || !percent) continue;
+  additives.forEach(a => {
+    let amt = wax * (a.pct / 100);
+    result += `<b>${a.name} (${a.pct}%):</b> ${amt.toFixed(2)} oz<br>`;
+  });
 
-        percentTotal += percent;
+  result += `<b>Total Finished Weight:</b> ${total.toFixed(2)} oz`;
 
-        additives.push({
-            name,
-            percent,
-            weight: (percent / 100) * totalWeight
-        });
-    }
-
-    const waxPercent = 100 - percentTotal;
-    const waxWeight = (waxPercent / 100) * totalWeight;
-
-    let output = "";
-    additives.forEach(a => {
-        output += `${a.name}: ${a.weight.toFixed(4)} oz (${a.percent}%)\n`;
-    });
-
-    output += `\nWax: ${waxWeight.toFixed(4)} oz (${waxPercent.toFixed(2)}%)`;
-
-    document.getElementById("results").textContent = output;
+  document.getElementById('output').innerHTML = result;
 }
+
 </script>
 
 </body>
